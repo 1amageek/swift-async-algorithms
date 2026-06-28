@@ -2,27 +2,6 @@
 
 import PackageDescription
 import CompilerPluginSupport
-import Foundation
-
-let manifestDirectoryURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-let manifestPath = manifestDirectoryURL.standardizedFileURL.path
-let isDependencyCheckout = manifestPath.contains("/.build/checkouts/")
-  || manifestPath.contains("/SourcePackages/checkouts/")
-
-func localOrForkDependency(
-  _ repository: String,
-  localPath: String,
-  traits: Set<Package.Dependency.Trait> = []
-) -> Package.Dependency {
-  let resolvedLocalPath = URL(fileURLWithPath: localPath, relativeTo: manifestDirectoryURL)
-    .standardizedFileURL
-    .path
-  if !isDependencyCheckout && FileManager.default.fileExists(atPath: resolvedLocalPath) {
-    return .package(path: resolvedLocalPath, traits: traits)
-  }
-
-  return .package(url: "https://github.com/1amageek/\(repository).git", branch: "main", traits: traits)
-}
 
 let AsyncAlgorithms_v1_0 = "AvailabilityMacro=AsyncAlgorithms 1.0:macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0"
 #if compiler(>=6.0) && swift(>=6.0)  // 5.10 doesnt support visionOS availability
@@ -183,9 +162,9 @@ let package = Package(
 )
 
 package.dependencies += [
-  localOrForkDependency(
-    "swift-collections",
-    localPath: "../swift-collections",
+  .package(
+    url: "https://github.com/1amageek/swift-collections.git",
+    branch: "main",
     traits: [.trait(name: "UnstableContainersPreview", condition: .when(traits: ["UnstableAsyncStreaming"]))]
   )
 ]
